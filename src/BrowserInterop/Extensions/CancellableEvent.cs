@@ -6,9 +6,9 @@ namespace BrowserInterop.Extensions
     public class CancellableEvent
     {
         private readonly IJSRuntime jsRuntime;
-        private readonly JsRuntimeObjectRef jsRuntimeObjectRef;
+        private readonly IJSObjectReference jsRuntimeObjectRef;
 
-        public CancellableEvent(IJSRuntime jsRuntime, JsRuntimeObjectRef jsRuntimeObjectRef)
+        public CancellableEvent(IJSRuntime jsRuntime, IJSObjectReference jsRuntimeObjectRef)
         {
             this.jsRuntime = jsRuntime;
             this.jsRuntimeObjectRef = jsRuntimeObjectRef;
@@ -21,7 +21,7 @@ namespace BrowserInterop.Extensions
         /// <returns></returns>
         public async ValueTask PreventDefault()
         {
-            await jsRuntime.InvokeInstanceMethod(jsRuntimeObjectRef, "preventDefault").ConfigureAwait(false);
+            await jsRuntime.InvokeInstanceMethodAsync(jsRuntimeObjectRef, "preventDefault").ConfigureAwait(false);
         }
     }
 }

@@ -8,8 +8,15 @@ browserInterop = new (function () {
 
     //reviver will help me store js object ref on .net like the .net do with elementreference or dotnetobjectreference
     this.jsObjectRefRevive = function (key, value) {
+
+        //if (value &&
+        //    typeof value === 'object' &&
+        //    typeof value.hasOwnProperty === 'function') {
+        //    console.log(value);
+        //}
         if (value &&
             typeof value === 'object' &&
+            typeof value.hasOwnProperty === 'function' &&
             value.hasOwnProperty(jsRefKey) &&
             typeof value[jsRefKey] === 'number') {
 
@@ -17,6 +24,7 @@ browserInterop = new (function () {
             if (!(id in jsObjectRefs)) {
                 throw new Error("This JS object reference does not exists : " + id);
             }
+            //console.log('ID: ' + id + '\nObject: ', jsObjectRefs[id]);
             return jsObjectRefs[id];
         } else {
             return value;
@@ -26,17 +34,23 @@ browserInterop = new (function () {
     this.returnInstance = function (instance, serializationSpec) {
         return me.getSerializableObject(instance, [], serializationSpec);
     }
+
+    //this simple method will be used for getting the content of a given js object ref because js interop will call the reviver with the given C# js object ref
+    this.returnJsReference = function (jsRefId) {
+        return jsObjectRefs[jsRefId];
+    }
     DotNet.attachReviver(this.jsObjectRefRevive);
     //this reviver change a given parameter to a method, it's usefull for sending .net callback to js
     DotNet.attachReviver(function (key, value) {
         if (value &&
             typeof value === 'object' &&
+            typeof value.hasOwnProperty === 'function' &&
             value.hasOwnProperty("__isCallBackWrapper")) {
 
 
             let netObjectRef = value.callbackRef;
 
-            return function () {
+            return async function () {
                 let args = [];
                 if (!value.getJsObjectRef) {
                     for (let index = 0; index < arguments.length; index++) {
@@ -46,7 +60,7 @@ browserInterop = new (function () {
                 } else {
                     for (let index = 0; index < arguments.length; index++) {
                         const element = arguments[index];
-                        args.push(me.storeObjectRef(element));
+                        args.push(await me.storeObjectRef(element));
                     }
                 }
                 return netObjectRef.invokeMethodAsync('Invoke', ...args);
@@ -78,10 +92,13 @@ browserInterop = new (function () {
     this.getPropertyRef = function (propertyPath) {
         return me.getInstancePropertyRef(window, propertyPath);
     };
-    this.getInstancePropertyRef = function (instance, propertyPath) {
-        return me.storeObjectRef(me.getInstanceProperty(instance, propertyPath));
+    this.getInstancePropertyRef = async function (instance, propertyPath) {
+        return await me.storeObjectRef(me.getInstanceProperty(instance, propertyPath));
     };
-    this.storeObjectRef = function (obj) {
+    this.storeObjectRef = async function (obj) {
+        if (obj instanceof Promise) {
+            obj = await obj;
+        }
         let id = jsObjectRefId++;
         jsObjectRefs[id] = obj;
         let jsRef = {};
@@ -131,6 +148,7 @@ browserInterop = new (function () {
         }
     };
     this.getInstancePropertySerializable = function (instance, propertyName, serializationSpec) {
+        //console.log('GetInstanceProperty: ', instance, propertyName, serializationSpec);
         let data = me.getInstanceProperty(instance, propertyName);
         if (data instanceof Promise) {//needed when some properties like beforeinstallevent.userChoice are promise
             return data;
@@ -156,8 +174,8 @@ browserInterop = new (function () {
         let method = me.getInstanceProperty(instance, methodPath);
         return method.apply(instance, args);
     };
-    this.callInstanceMethodGetRef = function (instance, methodPath, ...args) {
-        return this.storeObjectRef(this.callInstanceMethod(instance, methodPath, ...args));
+    this.callInstanceMethodGetRef = async function (instance, methodPath, ...args) {
+        return await this.storeObjectRef(this.callInstanceMethod(instance, methodPath, ...args));
     };
     this.getSerializableObject = function (data, alreadySerialized, serializationSpec) {
         if (serializationSpec === false) {
@@ -177,7 +195,7 @@ browserInterop = new (function () {
         }
         let res = (Array.isArray(data)) ? [] : {};
         if (!serializationSpec) {
-            serializationSpec = "*";
+            return data;
         }
         for (let i in data) {
             let currentMember = data[i];

@@ -1,4 +1,6 @@
 using BrowserInterop.Extensions;
+
+
 using Microsoft.JSInterop;
 using System.Threading.Tasks;
 
@@ -9,10 +11,10 @@ namespace BrowserInterop
     /// </summary>
     public class WindowFramesArray
     {
-        private readonly JsRuntimeObjectRef jsRuntimeObjectRef;
+        private readonly IJSObjectReference jsRuntimeObjectRef;
         private readonly IJSRuntime jsRuntime;
 
-        internal WindowFramesArray(JsRuntimeObjectRef jsRuntimeObjectRef, IJSRuntime jsRuntime)
+        internal WindowFramesArray(IJSObjectReference jsRuntimeObjectRef, IJSRuntime jsRuntime)
         {
             this.jsRuntimeObjectRef = jsRuntimeObjectRef;
             this.jsRuntime = jsRuntime;
@@ -25,7 +27,7 @@ namespace BrowserInterop
         /// <returns></returns>
         public async ValueTask<WindowInterop> Get(int index)
         {
-            return await jsRuntime.GetInstancePropertyWrapper<WindowInterop>(jsRuntimeObjectRef, $"frames[{index}]",
+            return await jsRuntime.GetInstancePropertyWrapperAsync<WindowInterop>(jsRuntimeObjectRef, $"frames[{index}]",
                 WindowInterop.SerializationSpec).ConfigureAwait(false);
         }
 
@@ -35,7 +37,7 @@ namespace BrowserInterop
         /// <returns></returns>
         public async ValueTask<int> Length()
         {
-            return await jsRuntime.GetInstanceProperty<int>(jsRuntimeObjectRef, "frames.length").ConfigureAwait(false);
+            return await jsRuntime.GetInstancePropertyAsync<int>(jsRuntimeObjectRef, "frames.length").ConfigureAwait(false);
         }
     }
 }

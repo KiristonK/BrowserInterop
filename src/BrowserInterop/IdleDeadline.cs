@@ -1,4 +1,5 @@
 using BrowserInterop.Extensions;
+
 using System;
 using System.Threading.Tasks;
 
@@ -22,7 +23,7 @@ namespace BrowserInterop
         public async ValueTask<TimeSpan> TimeRemaining()
         {
             return TimeSpan.FromMilliseconds(
-                await JsRuntime.InvokeInstanceMethod<double>(JsObjectRef, "timeRemaining").ConfigureAwait(false));
+                await JsRuntime.InvokeInstanceMethodAsync<double>(JsObjectRef, "timeRemaining").ConfigureAwait(false));
         }
     }
 }

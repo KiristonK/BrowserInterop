@@ -1,4 +1,5 @@
 using BrowserInterop.Extensions;
+
 using Microsoft.JSInterop;
 using System;
 using System.Text.Json.Serialization;
@@ -9,9 +10,9 @@ namespace BrowserInterop
     public class WindowNavigatorConnection
     {
         private IJSRuntime jSRuntime;
-        private JsRuntimeObjectRef navigatorRef;
+        private IJSObjectReference navigatorRef;
 
-        internal void SetJsRuntime(IJSRuntime jsRuntime, JsRuntimeObjectRef navigatorRef)
+        internal void SetJsRuntime(IJSRuntime jsRuntime, IJSObjectReference navigatorRef)
         {
             jSRuntime = jsRuntime;
             this.navigatorRef = navigatorRef;
@@ -97,7 +98,7 @@ namespace BrowserInterop
         /// <returns></returns> 
         public async ValueTask<IAsyncDisposable> OnChange(Func<ValueTask> toDo)
         {
-            return await jSRuntime.AddEventListener(navigatorRef, "connection", "change",
+            return await jSRuntime.AddEventListenerAsync(navigatorRef, "connection", "change",
                 CallBackInteropWrapper.Create(toDo)).ConfigureAwait(false);
         }
     }

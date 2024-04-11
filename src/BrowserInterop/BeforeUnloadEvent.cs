@@ -1,4 +1,5 @@
 ﻿using BrowserInterop.Extensions;
+
 using Microsoft.JSInterop;
 using System.Threading.Tasks;
 
@@ -7,9 +8,9 @@ namespace BrowserInterop
     public class BeforeUnloadEvent
     {
         private readonly IJSRuntime jsRuntime;
-        private readonly JsRuntimeObjectRef jsRuntimeObjectRef;
+        private readonly IJSObjectReference jsRuntimeObjectRef;
 
-        public BeforeUnloadEvent(IJSRuntime jsRuntime, JsRuntimeObjectRef jsRuntimeObjectRef)
+        public BeforeUnloadEvent(IJSRuntime jsRuntime, IJSObjectReference jsRuntimeObjectRef)
         {
             this.jsRuntime = jsRuntime;
             this.jsRuntimeObjectRef = jsRuntimeObjectRef;
@@ -22,7 +23,7 @@ namespace BrowserInterop
         /// <returns></returns>
         public async ValueTask Prompt()
         {
-            await jsRuntime.SetInstanceProperty(jsRuntimeObjectRef, "returnValue", false).ConfigureAwait(false);
+            await jsRuntime.SetInstancePropertyAsync(jsRuntimeObjectRef, "returnValue", false).ConfigureAwait(false);
         }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using BrowserInterop.Extensions;
+
 using BrowserInterop.Geolocation;
 using BrowserInterop.Storage;
 using Microsoft.JSInterop;
@@ -11,7 +12,7 @@ namespace BrowserInterop
 {
     public class WindowNavigator : JsObjectWrapperBase
     {
-        internal override void SetJsRuntime(IJSRuntime jsRuntime, JsRuntimeObjectRef navigatorRef)
+        protected internal override void SetJsRuntime(IJSRuntime jsRuntime, IJSObjectReference navigatorRef)
         {
             base.SetJsRuntime(jsRuntime, navigatorRef);
             Geolocation = new WindowNavigatorGeolocation(jsRuntime);
@@ -75,7 +76,7 @@ namespace BrowserInterop
         /// <returns></returns>
         public async ValueTask<bool> JavaEnabled()
         {
-            return await JsRuntime.InvokeInstanceMethod<bool>(JsObjectRef, "javaEnabled").ConfigureAwait(false);
+            return await JsRuntime.InvokeInstanceMethodAsync<bool>(JsObjectRef, "javaEnabled").ConfigureAwait(false);
         }
 
         /// <summary>
@@ -141,8 +142,8 @@ namespace BrowserInterop
         /// <returns></returns>
         public async ValueTask<bool> CanShare(ShareData shareData)
         {
-            return await JsRuntime.HasProperty(JsObjectRef, "canShare").ConfigureAwait(false) &&
-                   await JsRuntime.InvokeInstanceMethod<bool>(JsObjectRef, "canShare", shareData).ConfigureAwait(false);
+            return await JsRuntime.HasPropertyAsync(JsObjectRef, "canShare").ConfigureAwait(false) &&
+                   await JsRuntime.InvokeInstanceMethodAsync<bool>(JsObjectRef, "canShare", shareData).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -164,8 +165,8 @@ namespace BrowserInterop
 
             if (string.IsNullOrEmpty(title)) throw new ArgumentNullException(nameof(title));
 
-            if (await JsRuntime.HasProperty(JsObjectRef, "registerProtocolHandler").ConfigureAwait(false))
-                await JsRuntime.InvokeInstanceMethod(JsObjectRef, "registerProtocolHandler", protocol, urlPattern,
+            if (await JsRuntime.HasPropertyAsync(JsObjectRef, "registerProtocolHandler").ConfigureAwait(false))
+                await JsRuntime.InvokeInstanceMethodAsync(JsObjectRef, "registerProtocolHandler", protocol, urlPattern,
                     title).ConfigureAwait(false);
         }
 
@@ -181,8 +182,8 @@ namespace BrowserInterop
         /// <returns></returns>
         public async ValueTask<bool> SendBeacon(Uri url, object data)
         {
-            return await JsRuntime.HasProperty(JsObjectRef, "sendBeacon").ConfigureAwait(false) &&
-                   await JsRuntime.InvokeInstanceMethod<bool>(JsObjectRef, "sendBeacon", url, data).ConfigureAwait(false);
+            return await JsRuntime.HasPropertyAsync(JsObjectRef, "sendBeacon").ConfigureAwait(false) &&
+                   await JsRuntime.InvokeInstanceMethodAsync<bool>(JsObjectRef, "sendBeacon", url, data).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -192,7 +193,7 @@ namespace BrowserInterop
         /// <returns></returns>
         public async ValueTask Share(ShareData shareData)
         {
-            await JsRuntime.InvokeInstanceMethod<bool>(JsObjectRef, "share", shareData).ConfigureAwait(false);
+            await JsRuntime.InvokeInstanceMethodAsync<bool>(JsObjectRef, "share", shareData).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -202,7 +203,7 @@ namespace BrowserInterop
         /// <returns></returns>
         public async ValueTask Vibrate(IEnumerable<TimeSpan> pattern)
         {
-            await JsRuntime.InvokeInstanceMethod<bool>(JsObjectRef, "vibrate",
+            await JsRuntime.InvokeInstanceMethodAsync<bool>(JsObjectRef, "vibrate",
                 pattern.Select(t => t.TotalMilliseconds).ToArray()).ConfigureAwait(false);
         }
     }

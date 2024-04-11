@@ -11,7 +11,7 @@ namespace BrowserInterop.Screen
     public class ScreenOrientation
     {
         private IJSRuntime jsRuntime;
-        private JsRuntimeObjectRef screenRef;
+        private IJSObjectReference screenRef;
 
         /// <summary>
         /// Returns the document's current orientation type, one of "portrait-primary", "portrait-secondary", "landscape-primary", or "landscape-secondary".
@@ -38,7 +38,7 @@ namespace BrowserInterop.Screen
         /// <value></value>
         public int Angle { get; set; }
 
-        internal void SetJsRuntime(IJSRuntime jsRuntime, JsRuntimeObjectRef screenRef)
+        internal void SetJsRuntime(IJSRuntime jsRuntime, IJSObjectReference screenRef)
         {
             this.jsRuntime = jsRuntime;
             this.screenRef = screenRef;
@@ -51,7 +51,7 @@ namespace BrowserInterop.Screen
         /// <returns></returns>
         public async ValueTask<IAsyncDisposable> OnChange(Func<ValueTask> toDo)
         {
-            return await jsRuntime.AddEventListener(screenRef, "orientation", "change",
+            return await jsRuntime.AddEventListenerAsync(screenRef, "orientation", "change",
                 CallBackInteropWrapper.Create(toDo)).ConfigureAwait(false);
         }
 
@@ -61,7 +61,7 @@ namespace BrowserInterop.Screen
         /// <returns></returns>
         public async ValueTask Lock(ScreenOrientationTypeEnum newOrientation)
         {
-            await jsRuntime.InvokeInstanceMethod(screenRef, "orientation.lock", newOrientation switch
+            await jsRuntime.InvokeInstanceMethodAsync(screenRef, "orientation.lock", newOrientation switch
             {
                 ScreenOrientationTypeEnum.Any => "any",
                 ScreenOrientationTypeEnum.Natural => "natural",
@@ -81,7 +81,7 @@ namespace BrowserInterop.Screen
         /// <returns></returns>
         public async ValueTask Unlock()
         {
-            await jsRuntime.InvokeInstanceMethod(screenRef, "orientation.unlock").ConfigureAwait(false);
+            await jsRuntime.InvokeInstanceMethodAsync(screenRef, "orientation.unlock").ConfigureAwait(false);
         }
     }
 
