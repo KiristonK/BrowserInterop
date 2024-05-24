@@ -249,6 +249,11 @@ browserInterop = new (function () {
         }
         return res;
     };
+    this.notification = new (function () {
+        this.sendNotification = function (title, options) {
+            return new Notification(title, options)
+        }
+    })();
     this.navigator = new (function () {
         this.geolocation = new (function () {
             this.getCurrentPosition = function (options) {

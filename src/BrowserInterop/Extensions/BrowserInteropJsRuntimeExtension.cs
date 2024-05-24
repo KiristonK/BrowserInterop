@@ -227,6 +227,28 @@ namespace BrowserInterop.Extensions
             return jsRuntimeObjectRef;
         }
 
+        /// <summary>
+        /// Call the method on the js instance and return the reference to the js object and return wrapper
+        /// </summary>
+        /// <typeparam name="T">Type of the returned object</typeparam>
+        /// <param name="jsRuntime">Current JS Runtime</param>
+        /// <param name="jsObject">Reference to the JS instance</param>
+        /// <param name="methodName">Method name/path </param>
+        /// <param name="arguments">method arguments</param>
+        /// <returns></returns>
+        public static T InvokeInstanceMethodGetWrapper<T>(this IJSInProcessRuntime jsRuntime,
+           IJSObjectReference jsObject, string methodName, params object[] arguments) where T : JsObjectWrapperBase
+        {
+            ArgumentNullException.ThrowIfNull(jsRuntime);
+
+            var jsRuntimeObjectRef = jsRuntime.Invoke<IJSObjectReference>(
+                "browserInterop.callInstanceMethodGetRef",
+                [jsObject, methodName, .. arguments]);
+            var res = jsRuntime.InvokeInstanceMethod<T>(jsRuntimeObjectRef, "valueOf");
+            res.SetJsRuntime(jsRuntime, jsRuntimeObjectRef);
+            return res;
+        }
+
         public static bool HasProperty(this IJSInProcessRuntime jsRuntime, IJSObjectReference jsObject,
             string propertyPath)
         {
