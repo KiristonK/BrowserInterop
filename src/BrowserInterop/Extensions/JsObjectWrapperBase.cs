@@ -22,16 +22,20 @@ namespace BrowserInterop.Extensions
             JsRuntime = jsRuntime ?? throw new ArgumentNullException(nameof(jsRuntime));
         }
 
-        public async void Dispose()
+        public void Dispose()
         {
-            OnBeforeDispose?.Invoke(this, EventArgs.Empty);
-            await JsObjectRef.DisposeAsync().ConfigureAwait(false);
+            using (JsObjectRef as IJSInProcessObjectReference)
+            {
+                OnBeforeDispose?.Invoke(this, EventArgs.Empty);
+            }
             GC.SuppressFinalize(this);
         }
         public async ValueTask DisposeAsync()
         {
-            OnBeforeDispose?.Invoke(this, EventArgs.Empty);
-            await JsObjectRef.DisposeAsync().ConfigureAwait(false);
+            await using (JsObjectRef)
+            { 
+                OnBeforeDispose?.Invoke(this, EventArgs.Empty);
+            }
             GC.SuppressFinalize(this);
         }
     }

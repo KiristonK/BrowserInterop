@@ -82,6 +82,30 @@ namespace BrowserInterop.Extensions
         /// "true" or null will get everything, false will get nothing
         /// </param>
         /// <param name="getJsObjectRef">If true (default false) the call back will get the js object ref instead of the js object content</param>
+        /// <returns>A wrapper for the event handling</returns>
+        public static CallBackInteropWrapper Create<T, T1>(Func<T, T1, ValueTask> callback, object serializationSpec = null,
+            bool getJsObjectRef = false)
+        {
+            var res = new CallBackInteropWrapper
+            {
+                CallbackRef = DotNetObjectReference.Create(new JsInteropActionWrapper<T, T1>(callback)),
+                SerializationSpec = serializationSpec,
+                GetJsObjectRef = getJsObjectRef
+            };
+            return res;
+        }
+
+        /// <summary>
+        /// Create js interop wrapper for this c# action 
+        /// </summary>
+        /// <param name="callback"></param>
+        /// <param name="serializationSpec">
+        /// An object specifying the member we'll want from the JS object.
+        /// "new { allChild = "*", onlyMember = true, ignore = false }" will get all the fields in allChild,
+        /// the value of "onlyMember" and will ignore "ignore"
+        /// "true" or null will get everything, false will get nothing
+        /// </param>
+        /// <param name="getJsObjectRef">If true (default false) the call back will get the js object ref instead of the js object content</param>
         /// <returns>Object that needs to be send to js interop api call</returns>
         public static CallBackInteropWrapper Create(Func<ValueTask> callback, object serializationSpec = null,
             bool getJsObjectRef = false)

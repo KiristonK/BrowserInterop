@@ -43,6 +43,26 @@ namespace BrowserInterop.Extensions
             await toDo.Invoke(arg1).ConfigureAwait(false);
         }
     }
+
+    /// <summary>
+    /// Wrap a c# action into an object invokable by JS
+    /// </summary>
+    public class JsInteropActionWrapper<T, T1>
+    {
+        private readonly Func<T, T1, ValueTask> toDo;
+
+        internal JsInteropActionWrapper(Func<T, T1, ValueTask> toDo)
+        {
+            this.toDo = toDo;
+        }
+
+
+        [JSInvokable]
+        public async ValueTask Invoke(T arg1, T1 arg2)
+        {
+            await toDo.Invoke(arg1, arg2).ConfigureAwait(false);
+        }
+    }
     
     /// <summary>
     /// Wrap a c# action into an object invokable by JS

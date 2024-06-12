@@ -295,4 +295,8 @@ browserInterop = new (function () {
             });
         }
     })();
+    this.intersectionObserver = new (function () {
+        this.create = function (callback, options) { return new IntersectionObserver(callback, options);}
+    })();
+
 })();

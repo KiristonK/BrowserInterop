@@ -1,7 +1,14 @@
+using BrowserInterop.IntersectionObserver;
+
+using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Net.NetworkInformation;
 using System.Threading.Tasks;
+
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace BrowserInterop.Extensions
 {
@@ -36,6 +43,7 @@ namespace BrowserInterop.Extensions
         {
             return await jsRuntime.InvokeAsync<IJSObjectReference>("browserInterop.getPropertyRef", propertyPath).ConfigureAwait(false);
         }
+
         
         /// <summary>
         /// Get the window object property wrapper for interop calls
@@ -137,8 +145,6 @@ namespace BrowserInterop.Extensions
                     propertyPath).ConfigureAwait(false);
             return jsRuntimeObjectRef;
         }
-        
-
 
         /// <summary>
         /// Call the method on the js instance
@@ -301,6 +307,37 @@ namespace BrowserInterop.Extensions
                 //when timeout is reached, it raises an exception
                 return await Task.FromResult(default(T)).ConfigureAwait(false);
             }
+        }
+
+        /// <summary>
+        /// Creates an intersection observer <see href="https://developer.mozilla.org/en-US/docs/Web/API/IntersectionObserver/IntersectionObserver"/>
+        /// </summary>
+        /// <param name="jsRuntime">js runtime on which we'll execute the query</param>
+        /// <param name="callback">A function which is called when the percentage of the target element is visible crosses a threshold. The callback receives as input two parameters:<br/>
+        /// <br/>
+        /// entries<br/>
+        /// An array of IntersectionObserverEntry objects, each representing one threshold which was crossed, either becoming more or less visible than the percentage specified by that threshold.<br/>
+        /// <br/>
+        /// observer<br/>
+        /// The IntersectionObserver for which the callback is being invoked.</param>
+        /// <param name="options">An optional object which customizes the observer. All properties are optional. You can provide any combination of the following options:</param>
+        /// <returns>A new IntersectionObserver which can be used to watch for the visibility of a target element within the specified root crossing through any of the specified visibility thresholds. Call its observe() method to begin watching for the visibility changes on a given target.</returns>
+        public static async ValueTask<IntersectionObserverInterop> CreateIntersectionObserver(this IJSRuntime jsRuntime, Func<Task> callback, IntersectionObserverInit options = null)
+        {
+            var callbackWrapper = CallBackInteropWrapper.Create(async () =>
+            {
+                //var entries = await entriesRef.InvokeAsync<List<IntersectionObserverEntry>>("valueOf");
+                //var observerInterop = await jsRuntime.InvokeInstanceMethodGetWrapper<IntersectionObserverInterop>(observer, "valueOf").ConfigureAwait(false);
+                await callback().ConfigureAwait(false);
+            }, getJsObjectRef: true);
+
+            var jsObjectRef = await jsRuntime.InvokeAsync<IJSObjectReference>("browserInterop.intersectionObserver.create", callbackWrapper, options).ConfigureAwait(false);
+
+            if (jsObjectRef == null)
+                throw new InvalidOperationException("No JS object reference available.");
+            var ioInterop = await jsRuntime.InvokeInstanceMethodGetWrapper<IntersectionObserverInterop>(jsObjectRef, "valueOf").ConfigureAwait(false);
+            await (await jsRuntime.WindowAsync().ConfigureAwait(false)).Console.Log(ioInterop);
+            return ioInterop;
         }
     }
 }
