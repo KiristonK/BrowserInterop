@@ -24,18 +24,26 @@ namespace BrowserInterop.Extensions
 
         public void Dispose()
         {
-            using (JsObjectRef as IJSInProcessObjectReference)
+            try
             {
-                OnBeforeDispose?.Invoke(this, EventArgs.Empty);
+                using (JsObjectRef as IJSInProcessObjectReference)
+                {
+                    OnBeforeDispose?.Invoke(this, EventArgs.Empty);
+                }
             }
+            catch { }
             GC.SuppressFinalize(this);
         }
         public async ValueTask DisposeAsync()
         {
-            await using (JsObjectRef)
-            { 
-                OnBeforeDispose?.Invoke(this, EventArgs.Empty);
+            try
+            {
+                await using (JsObjectRef)
+                {
+                    OnBeforeDispose?.Invoke(this, EventArgs.Empty);
+                }
             }
+            catch { }
             GC.SuppressFinalize(this);
         }
     }
